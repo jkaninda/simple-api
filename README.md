@@ -831,9 +831,9 @@ spec:
             httpGet:
               path: /internal/health/ready
               port: 8080
-            initialDelaySeconds: 70
-            periodSeconds: 40
-            timeoutSeconds: 20
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 10
             # HTTP Health Check
           livenessProbe:
               httpGet:
