@@ -32,14 +32,15 @@ public class DataBaseSeed {
         //Run Data base seed
         if (ObjectUtils.isEmpty(bookRepository.findAll())) {
             File file = util.readFIle ("books.json", Path.of("data"));
-            log.info("Insert Books");
+            log.info("Seed:: Inserting Books...");
             try {
                 books = objectMapper.readValue(file, new TypeReference<>() {
                 });
                 bookRepository.saveAll(books);
-                log.info("Books Inserted");
+                log.info("Seed:: Books Inserted");
+                log.info("Seed:: Database seed successfully completed");
             } catch (IOException e) {
-                log.error("Error reading file", e);
+                log.error("Seed:: Error reading file", e);
             }
 
 

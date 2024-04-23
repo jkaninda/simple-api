@@ -20,10 +20,10 @@ public class AppRunner implements ApplicationRunner {
 
         //Run Data base seed
         if (runDataSeedOnBoot){
-            log.info("============= Start Database seed ================");
+            log.info("Seed:: Start Database seed ");
             dataBaseSeed.run();
         }else {
-            log.info("========== Database seed on boot is disabled ==========");
+            log.info("Seed::  Database seed on boot is disabled");
 
         }
 

@@ -4,6 +4,7 @@ A simple REST API application with Redis database built with Spring boot to lear
 ## Learning topics:
 
 - Spring boot Rest API
+- Springboot Scheduler
 - REST API HTTP status codes
 - Microservices architecture
 - Microservices communication
@@ -17,13 +18,15 @@ A simple REST API application with Redis database built with Spring boot to lear
 - Docker services
 - Docker Networks
 - Docker volumes
-- Container communication
+- Docker Container communication
+- Docker Container Healthcheck
+- Docker Image build
 - Docker Rootless Container
 
 ### Kubernetes
 
-- Kubernetes Deployments
 - Kubernetes Pods
+- Kubernetes Deployments
 - Kubernetes services
 - Kubernetes ConfigMap
 - Kubernetes Volumes
@@ -313,6 +316,70 @@ networks:
     external: true
     name: web
 ```
+### Docker container with Health check
+
+```yaml
+version: '3.9'
+services:
+  simple-api:
+    container_name: simple-api
+    image: jkaninda/simple-api:latest
+    restart: unless-stopped
+    env_file:
+      - simple-api.env
+    ports:
+      - "8080:8080"
+    ## Application Health check
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+    networks:
+      - web
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${SPRING_DATA_REDIS_PASSWORD}"
+    env_file:
+      - simple-api.env
+    expose:
+      - 6379
+    volumes:
+      - ./redis:/data
+    networks:
+      - web
+networks:
+  web:
+    external: true
+    name: web
+```
+## Build Docker image
+
+`Dockerfile`
+
+```dockerfile
+# Buil Stage
+FROM maven:3.8.7-amazoncorretto-17 AS MAVEN_TOOL_CHAIN
+WORKDIR /tmp/
+COPY pom.xml /tmp/pom.xml
+COPY src /tmp/src/
+RUN mvn clean package -B
+
+FROM amazoncorretto:17-alpine3.19-jdk
+ENV VERSION="1.0"
+LABEL author="Jonas Kaninda"
+LABEL github="https://github.com/jkaninda/simple-api"
+ARG JAR_FILE=target/*.jar
+# Copy from build stage
+COPY --from=MAVEN_TOOL_CHAIN /tmp/$JAR_FILE /App/api.jar
+COPY ./data /data
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "/App/api.jar"]
+```
+
+```shell
+docker build -f docker/Dockerfile -t jkaninda/simple-api:latest . 
+```
+
 
 ### Screenshots
 

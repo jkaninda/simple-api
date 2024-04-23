@@ -12,7 +12,7 @@ LABEL author="Jonas Kaninda"
 LABEL github="https://github.com/jkaninda/simple-api"
 ARG USER_ID=1000
 ENV USER_NAME=jkaninda
-RUN apt-get update && apt-get -y  install wget openjdk-17-jdk
+RUN apt-get update && apt-get -y  install curl wget openjdk-17-jdk
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

@@ -31,8 +31,8 @@ public class InternalController {
         fakeRepository.save(fake);
         //
         long count=fakeRepository.count();
-        log.info("Health::  Application Health check, count: {}", count);
-        log.info("Health::  Application is running and everything is OK");
+        log.info("Health:: Application Health check, count: {}", count);
+        log.info("Health:: Application is running and everything is OK");
         return ResponseEntity.ok("Running...");
     }
 
