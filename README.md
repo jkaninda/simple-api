@@ -1088,26 +1088,24 @@ Install using Helm
 
 Helm doc : https://helm.sh/docs/intro/install/
 
-Clone Simple APi repo:
+
+
+
+
+#### Install Simple API
 
 ```shell
-git clone https://github.com/jkaninda/simple-api.git && cd "$(basename "$_" .git)"
+helm install simple-api oci://registry-1.docker.io/jkaninda/simple-api --version 0.1.1
 ```
 
-```shell
-cd charts 
-```
-
-Install Simple API
-
-```shell
-helm install simple-api simple-api
-```
-
-Install Monitoring
+#### Install Monitoring
  - Prometheus
  - Grafana
 
 ```shell
-helm install monitoring monitoring
+helm show all oci://registry-1.docker.io/jkaninda/monitoring --version 0.1.0
+```
+
+```shell
+helm install monitoring oci://registry-1.docker.io/jkaninda/monitoring --version 0.1.0
 ```
