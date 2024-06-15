@@ -59,9 +59,9 @@ ingress:
   #    hosts:
   #      - chart-example.local
 config:
-    enabled: false
+    enabled: true
     data:
-      SPRING_DATA_REDIS_HOST: 'redis-svc'
+      SPRING_DATA_REDIS_HOST: 'redis'
       SPRING_DATA_REDIS_PORT: '6379'
       SPRING_DATA_REDIS_PASSWORD: 'password'
       ## Insert Redis fake data, requires Redis data source || By default is disabled

@@ -13,3 +13,17 @@ spec:
       name: http
   selector:
     {{- include "simple-api.selectorLabels" . | nindent 4 }}
+---
+## Redis
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  labels:
+  {{- include "simple-api.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
