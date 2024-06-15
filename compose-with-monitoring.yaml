@@ -1,0 +1,53 @@
+version: '3.9'
+services:
+  simple-api:
+    container_name: simple-api
+    image: jkaninda/simple-api:latest
+    restart: unless-stopped
+    env_file:
+      - simple-api.env
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+    networks:
+      - web
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${SPRING_DATA_REDIS_PASSWORD}"
+    env_file:
+      - simple-api.env
+    expose:
+      - 6379
+    volumes:
+      - ./redis:/data
+    networks:
+      - web
+  prometheus:
+    image: jkaninda/prometheus:v2.52.0
+    container_name: prometheus
+    restart: unless-stopped
+    expose:
+      - 9090
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - web
+
+  grafana:
+    image: jkaninda/grafana:11.0.0
+    container_name: grafana
+    restart: unless-stopped
+    expose:
+      - 3001:3000
+    volumes:
+      - ./config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana:/var/lib/grafana
+    networks:
+      - web
+networks:
+  web:
+    external: true
+    name: web

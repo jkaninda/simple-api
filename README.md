@@ -12,6 +12,9 @@ A simple REST API application with Redis database built with Spring boot to lear
 - Application logging
 - Application scaling
 - Application Health check
+- Application monitoring
+- Grafana
+- Prometheus
 
 
 ### Docker
@@ -975,3 +978,109 @@ spec:
       targetPort: 8080
 ---
 ```
+## Install with Monitoring
+### Docker
+
+Create `config/datasources.yaml` and copy the content bellow
+
+```yaml
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+```
+
+Create `config/prometheus.yaml` and copy the content bellow
+
+```yaml
+global:
+  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+scrape_configs:
+    # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+    - job_name: "simple-api"
+      metrics_path: '/actuator/prometheus'
+      # scheme defaults to 'http'.
+      scrape_interval: 30s # poll very quickly for a more responsive demo
+      static_configs:
+        - targets: ["simple-api:8080"]
+          labels:
+            application: 'Simple API'
+```
+Create compose.yaml and copy the content bellow
+
+```yaml
+version: '3.9'
+services:
+  simple-api:
+    container_name: simple-api
+    image: jkaninda/simple-api:latest
+    restart: unless-stopped
+    env_file:
+      - simple-api.env
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+    networks:
+      - web
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${SPRING_DATA_REDIS_PASSWORD}"
+    env_file:
+      - simple-api.env
+    expose:
+      - 6379
+    volumes:
+      - ./redis:/data
+    networks:
+      - web
+  prometheus:
+    image: jkaninda/prometheus:v2.52.0
+    container_name: prometheus
+    restart: unless-stopped
+    expose:
+      - 9090
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - web
+
+  grafana:
+    image: jkaninda/grafana:11.0.0
+    container_name: grafana
+    restart: unless-stopped
+    expose:
+      - 3000:3000
+    volumes:
+      - ./config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana:/var/lib/grafana
+    networks:
+      - web
+networks:
+  web:
+    external: true
+    name: web
+```
+
+Open http://localhost:3000 in your web browser
+
+Grafana's default credentials is username `admin` and password`admin`
+Use this ID to import Spring boot grafana dashboard ``11378``
+
+<img src="https://raw.githubusercontent.com/jkaninda/simple-api/main/screenshots/grafana_login.png"/>
+
+<img src="https://raw.githubusercontent.com/jkaninda/simple-api/main/screenshots/metrics.png"/> 
+
+<img src="https://raw.githubusercontent.com/jkaninda/simple-api/main/screenshots/grafana.png"/> 
+
+
+### Kubernetes
+
+

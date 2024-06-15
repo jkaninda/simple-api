@@ -32,6 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 compose.yaml
-deployment.yaml
+#deployment.yaml
 simple-api.env
 redis
+grafana
+monitoring.yaml
