@@ -1072,6 +1072,7 @@ networks:
 Open http://localhost:3000 in your web browser
 
 Grafana's default credentials is username `admin` and password`admin`
+
 Use this ID to import Spring boot grafana dashboard ``11378``
 
 <img src="https://raw.githubusercontent.com/jkaninda/simple-api/main/screenshots/grafana_login.png"/>
