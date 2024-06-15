@@ -1085,7 +1085,8 @@ Use this ID to import Spring boot grafana dashboard ``11378``
 ### Kubernetes
 
 Install using Helm 
- Helm doc : https://helm.sh/docs/intro/install/
+
+Helm doc : https://helm.sh/docs/intro/install/
 
 Clone Simple APi repo:
 
