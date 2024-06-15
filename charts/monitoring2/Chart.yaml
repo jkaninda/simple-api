@@ -1,0 +1,14 @@
+apiVersion: v2
+name: monitoring
+description: A Helm chart for Prometheus and Grafana for  Simple API
+version: 0.1.0
+appVersion: 1.0.0
+dependencies:
+  - name: prometheus
+    version: "0.1.0"
+    repository: "file://./charts/prometheus"
+    enabled: true
+  - name: grafana
+    version: "0.1.0"
+    repository: "file://./charts/grafana"
+    enabled: true

@@ -1,0 +1,121 @@
+prometheus:
+  # Default values for prometheus.
+  # This is a YAML-formatted file.
+  # Declare variables to be passed into your templates.
+
+  replicaCount: 1
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: prometheus.localhost
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+  config:
+      enabled: true
+      data:
+        prometheus.yml: |
+            global:
+              scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+              evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+              # scrape_timeout is set to the global default (10s).
+            scrape_configs:
+              # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+              - job_name: "simple-api"
+                metrics_path: '/actuator/prometheus'
+                # scheme defaults to 'http'.
+                scrape_interval: 30s # poll very quickly for a more responsive demo
+                static_configs:
+                  - targets: ["simple-api:8080"]
+                    labels:
+                      application: 'Simple API'
+
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  volumes: 
+  - name: data
+    persistentVolumeClaim:
+      claimName: monitoring-prometheus
+  - name: config
+    configMap:
+      name: monitoring-prometheus
+  persistence:
+    enabled: true
+    storageClass: ""
+    existingClaim: ""
+    accessMode: ReadWriteOnce
+    size: 10Gi
+grafana:
+  # Default values for grafana.
+  # This is a YAML-formatted file.
+  # Declare variables to be passed into your templates.
+
+  replicaCount: 1
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: grafana.localhost
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+    config:
+      enabled: true
+      data: 
+        datasources.yaml: |
+          apiVersion: 1
+          datasources:
+            - name: Prometheus
+              type: prometheus
+              access: proxy
+              url: http://monitoring-prometheus:9090
+              isDefault: true
+  resources: {}
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 100m
+    #   memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+  volumes: 
+  - name: data
+    persistentVolumeClaim:
+      claimName: monitoring-grafana
+  - name: config
+    configMap:
+      name: monitoring-grafana
+  persistence:
+    enabled: true
+    storageClass: "local-storage"
+    existingClaim: ""
+    accessMode: ReadWriteOnce
+    size: 10Gi
