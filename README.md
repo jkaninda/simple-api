@@ -1056,8 +1056,8 @@ services:
     image: jkaninda/grafana:11.0.0
     container_name: grafana
     restart: unless-stopped
-    expose:
-      - 3000:3000
+    ports:
+      - "3000:3000"
     volumes:
       - ./config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - ./grafana:/var/lib/grafana
@@ -1071,7 +1071,7 @@ networks:
 
 Open http://localhost:3000 in your web browser
 
-Grafana's default credentials is username `admin` and password`admin`
+Grafana's default credentials are username `admin` and password`admin`
 
 Use this ID to import Spring boot grafana dashboard ``11378``
 
