@@ -22,17 +22,16 @@ services:
     expose:
       - 6379
     volumes:
-      - ./redis:/data
+      - redis:/data
     networks:
       - web
   prometheus:
     image: jkaninda/prometheus:v2.52.0
     container_name: prometheus
     restart: unless-stopped
-    expose:
-      - 9090
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus:/prometheus
     networks:
       - web
 
@@ -41,12 +40,16 @@ services:
     container_name: grafana
     restart: unless-stopped
     expose:
-      - 3001:3000
+      - 3000:3000
     volumes:
       - ./config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-      - ./grafana:/var/lib/grafana
+      - grafana:/var/lib/grafana
     networks:
       - web
+volumes:
+  redis:
+  prometheus:
+  grafana:
 networks:
   web:
     external: true

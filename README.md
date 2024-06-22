@@ -1045,10 +1045,9 @@ services:
     image: jkaninda/prometheus:v2.52.0
     container_name: prometheus
     restart: unless-stopped
-    expose:
-      - 9090
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      -  ./prometheus:/prometheus
     networks:
       - web
 
