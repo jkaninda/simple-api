@@ -376,14 +376,10 @@ Authentication will also be enabled.
 
 #### Steps to Deploy
 
-1. **Enable Authentication**: Uncomment the `basic-auth` section in the `middlewares` configuration of the `goma-config.yml` file.
-
-2. **Create the Configuration File**:
+**Create the Configuration File**:
     - Create a file named `goma-config.yml` in the `config` folder.
     - Copy and paste the following configuration:
- 
-3. **Goma Gateway Configuration**:
-    - Create a `goma-config.yml` file:
+
 ```yaml
 version: 2
 gateway:
