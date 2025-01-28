@@ -384,65 +384,93 @@ Authentication will also be enabled.
  
 3. **Goma Gateway Configuration**:
     - Create a `goma-config.yml` file:
-
-      ```yaml
-      version: 2
-      gateway:
-        writeTimeout: 15
-        readTimeout: 15
-        idleTimeout: 30
-        logLevel: ""
-        extraConfig:
-          directory: /etc/goma/extra
-          watch: false
-        routes:
-          - path: /
-            name: simple-api
-            disabled: false
-            hosts: []
-            cors:
-              origins:
-                - http://localhost:3000
-              headers:
-                Access-Control-Allow-Credentials: "true"
-                Access-Control-Allow-Headers: Origin, Authorization
-                Access-Control-Max-Age: "1728000"
-            rewrite: ''
-            methods: []
-            backends:
-              - endpoint: http://simple-api:8080
-                weight: 1
-              - endpoint: http://simple-api2:8080
-                weight: 2
-              - endpoint: http://simple-api3:8080
-                weight: 4
-            healthCheck:
-              path: /internal/health/live
-              interval: 15s
-              timeout: 10s
-              healthyStatuses:
-                - 200
-                - 404
-            insecureSkipVerify: false
-            disableHostForwarding: false
-            errorInterceptor:
-              enabled: true
-              contentType: application/json
-              errors:
-                - status: 404
-                  body: '{"error": "404 Not Found"}'
-                - status: 500
-                  body: '{"error": "Internal Server Error"}'
-            middlewares:
-              - rate-limit
+```yaml
+version: 2
+gateway:
+  writeTimeout: 15
+  readTimeout: 15
+  idleTimeout: 30
+  logLevel: ""
+  extraConfig:
+    directory: /etc/goma/extra
+    watch: false
+  routes:
+    - path: /
+      name: simple-api
+      disabled: false
+      hosts: []
+      cors:
+        origins:
+          - http://localhost:3000
+        headers:
+          Access-Control-Allow-Credentials: "true"
+          Access-Control-Allow-Headers: Origin, Authorization
+          Access-Control-Max-Age: "1728000"
+      rewrite: ''
+      methods: []
+      backends:
+        - endpoint: http://simple-api:8080
+          weight: 5
+        - endpoint: http://simple-api2:8080
+          weight: 2
+        - endpoint: http://simple-api3:8080
+          weight: 1
+      healthCheck:
+        path: /internal/health/live
+        interval: 30s
+        timeout: 10s
+        healthyStatuses:
+          - 200
+          - 404
+      insecureSkipVerify: false
+      disableHostForwarding: false
+      # Intercept backend error
+      errorInterceptor:
+        enabled: true
+        contentType: application/json
+        # Customize error response
+        errors:
+          - status: 404
+            body: '{"error": "404 Not Found"}'
+          - status: 500
+            body: '{"error": "Internal Server Error"}'
       middlewares:
-        - name: rate-limit
-          type: rateLimit
-          rule:
-            unit: minute
-            requestsPerUnit: 30
-      ```
-
+        #-  access-policy
+       # - basic-auth
+       # - block-access
+        - rate-limit
+middlewares:
+  - name: basic-auth
+    type: basic
+    paths:
+      - /*
+    rule:
+      realm: Restricted
+      users:
+        - admin:$2y$05$TIx7l8sJWvMFXw4n0GbkQuOhemPQOormacQC4W1p28TOVzJtx.XpO
+        - admin:admin
+  - name: block-access
+    type: access
+    paths:
+      - /swagger-ui/*
+      - /api-docs/*
+      - /actuator/*
+    rule:
+      statusCode: 404
+  - name: rate-limit
+    type: rateLimit
+    rule:
+      unit: minute
+      requestsPerUnit: 30
+  - name: access-policy
+    type: accessPolicy
+    rule:
+      action: DENY
+      sourceRanges:
+        - 10.1.10.0/16
+        - 192.168.1.25-192.168.1.100
+        - 192.168.1.115
+```
 2. **Update `compose.yaml` for API Gateway**:
     - Add the following services:
    
