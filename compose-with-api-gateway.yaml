@@ -1,0 +1,62 @@
+services:
+  api-gateway:
+    image: jkaninda/goma-gateway
+    container_name: api-gateway
+    command: server -c /etc/goma/goma-config.yml
+    restart: always
+    volumes:
+      - ./config:/etc/goma
+    ports:
+      - "8080:8080"
+      - "843:8443"
+    networks:
+      - web
+  simple-api:
+    container_name: simple-api
+    image: jkaninda/simple-api:latest
+    restart: unless-stopped
+    env_file:
+      - simple-api.env
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+    networks:
+      - web
+  simple-api2:
+    container_name: simple-api2
+    image: jkaninda/simple-api:latest
+    restart: unless-stopped
+    env_file:
+      - simple-api.env
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+    networks:
+      - web
+  simple-api3:
+    container_name: simple-api2
+    image: jkaninda/simple-api:latest
+    restart: unless-stopped
+    env_file:
+      - simple-api.env
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+    networks:
+      - web
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${SPRING_DATA_REDIS_PASSWORD}"
+    env_file:
+      - simple-api.env
+    expose:
+      - 6379
+    volumes:
+      - redis:/data
+    networks:
+      - web
+volumes:
+  redis:
+networks:
+  web:
+    external: true
+    name: web
