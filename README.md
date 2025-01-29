@@ -343,10 +343,99 @@ This project covers a wide range of topics, including microservices architecture
 
 3. **Docker Container Health Check**:
     - Add a health check to the `compose.yaml` file:
+   
       ```yaml
       healthcheck:
         test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
       ```
+
+---
+## Deploy with Monitoring
+
+### Docker Compose Setup
+
+1. **Create Configuration Files**
+   - `config/datasources.yaml`
+     ```yaml
+     apiVersion: 1
+     datasources:
+       - name: Prometheus
+         type: prometheus
+         access: proxy
+         url: http://prometheus:9090
+         isDefault: true
+     ```
+   - `config/prometheus.yaml`
+     ```yaml
+     global:
+       scrape_interval: 15s
+       evaluation_interval: 15s
+     scrape_configs:
+       - job_name: "simple-api"
+         metrics_path: '/actuator/prometheus'
+         static_configs:
+           - targets: ["simple-api:8080"]
+             labels:
+               application: 'Simple API'
+     ```
+
+2. **Create `compose.yaml`**
+
+   ```yaml
+   version: '3.9'
+   services:
+     simple-api:
+       image: jkaninda/simple-api:latest
+       restart: unless-stopped
+       env_file:
+         - simple-api.env
+       ports:
+         - "8080:8080"
+       healthcheck:
+         test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
+       networks:
+         - web
+     redis:
+       image: redis:alpine
+       restart: unless-stopped
+       command: redis-server --appendonly yes --requirepass "${SPRING_DATA_REDIS_PASSWORD}"
+       env_file:
+         - simple-api.env
+       volumes:
+         - ./redis:/data
+       networks:
+         - web
+     prometheus:
+       image: prom/prometheus:v2.52.0
+       volumes:
+         - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+         - ./prometheus:/prometheus
+       networks:
+         - web
+     grafana:
+       image: grafana/grafana:11.0.0
+       ports:
+         - "3000:3000"
+       volumes:
+         - ./config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+         - ./grafana:/var/lib/grafana
+       networks:
+         - web
+   networks:
+     web:
+       external: true
+       name: web
+   ```
+
+3. **Start Services**
+   ```bash
+   docker-compose up -d
+   ```
+
+4. **Access Grafana**
+   - Open `http://localhost:3000` in your browser.
+   - Use default credentials: `admin`/`admin`.
+   - Import Spring Boot Grafana dashboard using ID `11378`.
 
 ---
 
@@ -418,8 +507,6 @@ gateway:
         healthyStatuses:
           - 200
           - 404
-      insecureSkipVerify: false
-      disableHostForwarding: false
       # Intercept backend error
       errorInterceptor:
         enabled: true
@@ -567,7 +654,6 @@ ENTRYPOINT ["java", "-jar", "/App/api.jar"]
 ```bash
 docker build -f docker/Dockerfile -t jkaninda/simple-api:latest .
 ```
-
 ---
 
 ## Run on Kubernetes
@@ -663,96 +749,6 @@ EOF
    ```
 
 ---
-
-## Deploy with Monitoring
-
-### Docker Compose Setup
-
-1. **Create Configuration Files**
-    - `config/datasources.yaml`
-      ```yaml
-      apiVersion: 1
-      datasources:
-        - name: Prometheus
-          type: prometheus
-          access: proxy
-          url: http://prometheus:9090
-          isDefault: true
-      ```
-    - `config/prometheus.yaml`
-      ```yaml
-      global:
-        scrape_interval: 15s
-        evaluation_interval: 15s
-      scrape_configs:
-        - job_name: "simple-api"
-          metrics_path: '/actuator/prometheus'
-          static_configs:
-            - targets: ["simple-api:8080"]
-              labels:
-                application: 'Simple API'
-      ```
-
-2. **Create `compose.yaml`**
-
-   ```yaml
-   version: '3.9'
-   services:
-     simple-api:
-       image: jkaninda/simple-api:latest
-       restart: unless-stopped
-       env_file:
-         - simple-api.env
-       ports:
-         - "8080:8080"
-       healthcheck:
-         test: wget --no-verbose --tries=1 --spider http://localhost:8080/internal/health/live || exit 1
-       networks:
-         - web
-     redis:
-       image: redis:alpine
-       restart: unless-stopped
-       command: redis-server --appendonly yes --requirepass "${SPRING_DATA_REDIS_PASSWORD}"
-       env_file:
-         - simple-api.env
-       volumes:
-         - ./redis:/data
-       networks:
-         - web
-     prometheus:
-       image: prom/prometheus:v2.52.0
-       volumes:
-         - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-         - ./prometheus:/prometheus
-       networks:
-         - web
-     grafana:
-       image: grafana/grafana:11.0.0
-       ports:
-         - "3000:3000"
-       volumes:
-         - ./config/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-         - ./grafana:/var/lib/grafana
-       networks:
-         - web
-   networks:
-     web:
-       external: true
-       name: web
-   ```
-
-3. **Start Services**
-   ```bash
-   docker-compose up -d
-   ```
-
-4. **Access Grafana**
-    - Open `http://localhost:3000` in your browser.
-    - Use default credentials: `admin`/`admin`.
-    - Import Spring Boot Grafana dashboard using ID `11378`.
-
----
-
 ## Advanced Deployment
 
 ### Health Checks and Security Context
