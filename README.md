@@ -233,7 +233,6 @@ This project covers a wide range of topics, including microservices architecture
     - Create a `compose.yaml` file with the following content:
 
       ```yaml
-      version: '3.9'
       services:
         simple-api:
           container_name: simple-api
@@ -260,7 +259,6 @@ This project covers a wide range of topics, including microservices architecture
 1. **Deploy with Redis**:
     - Update the `compose.yaml` file:
       ```yaml
-      version: '3.9'
       services:
         simple-api:
           container_name: simple-api
@@ -300,6 +298,7 @@ This project covers a wide range of topics, including microservices architecture
 
 2. **Environment Variables from a File**:
     - Create a `simple-api.env` file:
+   
       ```conf
       SPRING_DATA_REDIS_HOST=redis
       SPRING_DATA_REDIS_PORT=6379
@@ -310,7 +309,6 @@ This project covers a wide range of topics, including microservices architecture
     - Update the `compose.yaml` file to use the environment file:
 
       ```yaml
-      version: '3.9'
       services:
         simple-api:
           container_name: simple-api
@@ -356,6 +354,7 @@ This project covers a wide range of topics, including microservices architecture
 
 1. **Create Configuration Files**
    - `config/datasources.yaml`
+   
      ```yaml
      apiVersion: 1
      datasources:
@@ -366,6 +365,7 @@ This project covers a wide range of topics, including microservices architecture
          isDefault: true
      ```
    - `config/prometheus.yaml`
+   
      ```yaml
      global:
        scrape_interval: 15s
@@ -382,7 +382,6 @@ This project covers a wide range of topics, including microservices architecture
 2. **Create `compose.yaml`**
 
    ```yaml
-   version: '3.9'
    services:
      simple-api:
        image: jkaninda/simple-api:latest
